@@ -8,3 +8,8 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Experiment artifacts (regenerable)
+data/compressed/
+outputs/annotated/
+outputs/results/

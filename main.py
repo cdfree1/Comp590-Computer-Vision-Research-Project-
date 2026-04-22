@@ -1,24 +1,15 @@
-import ultralytics
-import supervision
-import torch
-import cv2
-from collections import defaultdict
-import supervision as sv
-from ultralytics import YOLO
-import networkx as nx
-import matplotlib.pyplot as plt
-import numpy as np
+"""Smoke test: confirm YOLOv8n loads and runs on the bundled bus image."""
 
-def main():
+from ultralytics import YOLO
+
+
+def main() -> None:
     model = YOLO("yolov8n.pt")
     results = model("https://ultralytics.com/images/bus.jpg")
-
     for result in results:
-        result.show()
         for box in result.boxes:
-            print(result.names[int(box.cls[0])])
-            print(box.xyxy)
-    fig, ax, = plt.subplot()
- 
+            print(result.names[int(box.cls[0])], box.xyxy.tolist())
+
+
 if __name__ == "__main__":
     main()
