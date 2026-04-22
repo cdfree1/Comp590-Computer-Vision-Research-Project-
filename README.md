@@ -24,6 +24,7 @@ scripts/
   detect.py             # YOLOv8n inference + metric aggregation
   run_experiment.py     # orchestrator (compress -> detect -> CSV)
   plot_results.py       # CSV -> 3 plots
+experiment.ipynb        # notebook walkthrough of the whole pipeline
 main.py                 # smoke test: verify YOLOv8n loads
 ```
 
@@ -40,6 +41,16 @@ uv sync            # or: pip install -e .
 ```
 
 ## Running the experiment
+
+Two equivalent ways to run the full pipeline:
+
+### Option A — Notebook (recommended for the paper/demo)
+
+Open `experiment.ipynb` and run the cells top-to-bottom. It walks through
+setup → compression → detection → CSV → plots → annotated samples, reusing
+the same functions as the CLI scripts.
+
+### Option B — CLI scripts
 
 1. **Drop 3 short videos** into `data/input_videos/` (any `.mp4`/`.mov`/etc.).
    A sample `d.mp4` is already included.
