@@ -1,0 +1,20 @@
+[project]
+name = "cv-project"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "ffmpeg>=1.4",
+    "lap>=0.5.13",
+    "matplotlib>=3.10.8",
+    "networkx>=3.6.1",
+    "pyside6>=6.11.0",
+    "supervision>=0.27.0.post2",
+    "ultralytics>=8.4.30",
+]
+
+[dependency-groups]
+dev = [
+    "black>=26.3.1",
+]
