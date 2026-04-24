@@ -1,12 +1,13 @@
 # Video Compression vs Object Detection Accuracy
 
-Minimal class-paper experiment: how does H.264 compression level affect YOLOv8n
+Minimal class-paper experiment: how does H.264 compression level affect YOLO26l
 object detection on short videos?
 
-- **Detector:** YOLOv8n (`yolov8n.pt`)
+- **Detector:** YOLO26l (`yolo26l.pt`)
 - **Codec:** H.264 (libx264)
 - **Compression levels:** CRF 18 (high), 28 (medium), 38 (low), plus the uncompressed original as a baseline
-- **Metrics per video version:** file size, total detections, average confidence
+- **Metrics per video version:** file size, total detections, average confidence,
+  and box agreement against YOLO detections on the original video
 
 ## Repo layout
 
@@ -18,14 +19,15 @@ outputs/
   annotated/<stem>/     # one annotated sample frame per version
   results/
     results.csv         # all metrics, one row per (video, version)
-    plots/*.png         # 3 summary charts
+    box_iou_samples.csv # one original-box IoU sample per row for violin plots
+    plots/*.png         # summary charts, including aggregate and by-video violins
 scripts/
   compress.py           # FFmpeg libx264 compression at CRF 18/28/38
-  detect.py             # YOLOv8n inference + metric aggregation
+  detect.py             # YOLO26l inference + metric aggregation
   run_experiment.py     # orchestrator (compress -> detect -> CSV)
-  plot_results.py       # CSV -> 3 plots
+  plot_results.py       # CSV -> summary plots
 experiment.ipynb        # notebook walkthrough of the whole pipeline
-main.py                 # smoke test: verify YOLOv8n loads
+main.py                 # smoke test: verify YOLO26l loads
 ```
 
 ## Setup
@@ -60,7 +62,7 @@ the same functions as the CLI scripts.
    ```
    This produces `data/compressed/<stem>/compressed_{high,medium,low}.mp4`,
    one annotated sample frame per version under `outputs/annotated/<stem>/`,
-   and `outputs/results/results.csv`.
+   `outputs/results/results.csv`, and `outputs/results/box_iou_samples.csv`.
 3. **Generate plots:**
    ```bash
    python -m scripts.plot_results
@@ -87,7 +89,17 @@ python -m scripts.compress data/input_videos/d.mp4  # or a single file
 | `file_size_mb`    | MB, rounded to 3 decimals                  |
 | `total_detections`| sum of YOLO boxes across all frames        |
 | `avg_confidence`  | mean confidence across all detections       |
+| `baseline_detections` | YOLO boxes found in the original video baseline |
+| `matched_box_count` | same-class boxes matched at IoU >= 0.50 against the original |
+| `avg_box_iou` | mean IoU of same-class overlapping boxes against the original |
+| `avg_box_accuracy_iou` | mean best same-class IoU per original box; missed boxes count as 0 |
+| `box_recall_iou50` | fraction of original boxes recovered at IoU >= 0.50 |
+| `box_precision_iou50` | fraction of this version's boxes matching original boxes at IoU >= 0.50 |
 | `sample_frame`    | path to an annotated sample frame, if any  |
+
+`outputs/results/box_iou_samples.csv` stores the individual original-box IoU
+values used for the violin plot. Each original-video YOLO box contributes one
+row per version; if the compressed video misses that object, `iou` is `0`.
 
 ## Notes for the paper
 
@@ -95,5 +107,6 @@ python -m scripts.compress data/input_videos/d.mp4  # or a single file
 - CRF 18 ≈ visually lossless, 28 is ffmpeg's default, 38 is visibly degraded.
 - `preset=medium` keeps encode time reasonable; audio is stripped (`-an`) so
   file sizes reflect the video stream only.
-- No ground-truth labels are used — we do not compute mAP. We report the
-  detector's own output counts and confidences as a proxy for quality.
+- No human ground-truth labels are used, so we do not compute mAP. For box
+  accuracy, YOLO detections on the original video are treated as the baseline;
+  compressed-video boxes are matched frame-by-frame by class and IoU.
